@@ -1,0 +1,40 @@
+plugins {
+	id "java"
+	id "application"
+}
+
+description = "CLI 프로그램의 jlink 예제"
+
+group "kr.ayukawa"
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+mainClassName = "kr.ayukawa.cli.EntryPoint"
+
+jar {
+	manifest {
+		attributes "Main-Class": mainClassName
+	}
+}
+
+def DIST_PATH = "dist"
+def JAVA_HOME = System.getenv("JAVA_HOME")
+def PATH_SEPARATOR = File.pathSeparatorChar
+
+task jlink(type: Exec, group: "build") {
+	dependsOn "clean"
+	dependsOn "jar"
+
+	workingDir "build"
+
+	commandLine "${JAVA_HOME}/bin/jlink",
+		"--module-path", "libs${PATH_SEPARATOR}${JAVA_HOME}/jmods",
+		"--add-modules", "kr.ayukawa.jlinktest.cli",
+		"--launcher", "client=kr.ayukawa.jlinktest.cli/kr.ayukawa.cli.EntryPoint",
+		"--output", "${DIST_PATH}",
+		"--strip-debug",
+		"--compress", "2",
+		"--no-header-files",
+		"--no-man-pages"
+}

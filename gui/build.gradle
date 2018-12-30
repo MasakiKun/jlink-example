@@ -1,0 +1,84 @@
+plugins {
+	id "java"
+	id "application"
+	id "com.google.osdetector" version "1.6.1"
+}
+
+description = "GUI(JavaFX) 프로그램의 jlink 예제"
+
+group "kr.ayukawa"
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+mainClassName = "kr.ayukawa.gui.EntryPoint"
+
+def PLATFORM = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os
+def DIST_PATH = "dist"
+def JAVA_HOME = System.getenv("JAVA_HOME")
+def PATH_SEPARATOR = new String(File.pathSeparatorChar)
+def PATH_TO_FX = System.getenv("PATH_TO_FX")
+def PATH_TO_FX_MODS = System.getenv("PATH_TO_FX_MODS")
+def MODULE_PATH = [
+	"libs",
+	"${JAVA_HOME}/jmods",
+	"${PATH_TO_FX_MODS}"
+]
+def USING_MODULES = [
+	"javafx.graphics",
+	"javafx.controls",
+	"kr.ayukawa.jlinktest.gui"
+]
+
+println(MODULE_PATH.join(PATH_SEPARATOR))
+println(USING_MODULES.join(","))
+
+compileJava {
+	options.encoding = "UTF-8"
+	options.compilerArgs = [
+		"--module-path", "${MODULE_PATH.join(PATH_SEPARATOR)}",
+		"--add-modules", "${USING_MODULES.join(",")}"
+	]
+}
+
+run {
+	jvmArgs "--module-path", "${MODULE_PATH.join(PATH_SEPARATOR)}"
+	jvmArgs "--add-modules", "${USING_MODULES.join(",")}"
+}
+
+jar {
+	manifest {
+		attributes "Main-Class": mainClassName
+	}
+}
+
+def versions = [
+	"javafx": "11.0.1"
+]
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile "org.openjfx:javafx-base:${versions.javafx}:${PLATFORM}"
+	compile "org.openjfx:javafx-graphics:${versions.javafx}:${PLATFORM}"
+	compile "org.openjfx:javafx-controls:${versions.javafx}:${PLATFORM}"
+}
+
+task jlink(type: Exec, group: "build") {
+	dependsOn "clean"
+	dependsOn "jar"
+
+	workingDir "build"
+
+	commandLine "${JAVA_HOME}/bin/jlink",
+			"--module-path", "${MODULE_PATH.join(PATH_SEPARATOR)}",
+			"--add-modules", "${USING_MODULES.join(",")}",
+			"--launcher", "gui=ayukawa.jlinktest.gui/kr.ayukawa.gui.EntryPoint",
+			"--output", "${DIST_PATH}",
+			"--strip-debug",
+			"--compress", "2",
+			"--no-header-files",
+			"--no-man-pages"
+}

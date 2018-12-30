@@ -1,0 +1,4 @@
+rootProject.name = 'jlink-example'
+
+include "cli"
+include "gui"
