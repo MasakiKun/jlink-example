@@ -22,14 +22,12 @@ def PLATFORM = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'wi
 def DIST_PATH = "dist"
 def JAVA_HOME = System.getenv("JAVA_HOME")
 def PATH_SEPARATOR = new String(File.pathSeparatorChar)
-def PATH_TO_FX = System.getenv("PATH_TO_FX")
-def PATH_TO_FX_JMODS = System.getenv("PATH_TO_FX_MODS")
+def PATH_TO_FX_JMODS = System.getenv("PATH_TO_FX_JMODS")
 def MODULE_PATH = [
 	compileJava.getDestinationDir().toString(),
 	"libs",
 	"${JAVA_HOME}/jmods",
-	"${PATH_TO_FX}",
-	//"${PATH_TO_FX_JMODS}"
+	"${PATH_TO_FX_JMODS}",
 ]
 def USING_MODULES = [
 	"javafx.graphics",
@@ -86,4 +84,9 @@ task jlink(type: Exec, group: "build") {
 		"--compress", "2",
 		"--no-header-files",
 		"--no-man-pages"
+
+	doFirst {
+		println("${MODULE_PATH.join(PATH_SEPARATOR)}")
+		println("${USING_MODULES.join(", ")}")
+	}
 }
