@@ -13,18 +13,25 @@ targetCompatibility = JavaVersion.VERSION_11
 
 mainClassName = "kr.ayukawa.jlinktest.gui/kr.ayukawa.gui.EntryPoint"
 
+// ========== 환경변수 설정
 def PLATFORM = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os
-def DIST_PATH = "dist"
-def JAVA_HOME = System.getenv("JAVA_HOME")
 def PATH_SEPARATOR = new String(File.pathSeparatorChar)
+def JAVA_HOME = System.getenv("JAVA_HOME")
+// JavaFX 라이브러리(*.jar) 경로. 컴파일 및 실행에 사용된다.
 def PATH_TO_FX = System.getenv("PATH_TO_FX")
+// JavaFX 정적 링킹 파일(*.jmod) 경로. 커스텀 런타임 JVM 작성에 사용된다.
 def PATH_TO_FX_JMODS = System.getenv("PATH_TO_FX_JMODS")
+// 커스텀 런타임 JVM이 생성될 위치
+def DIST_PATH = "dist"
+// 컴파일 및 실행, 커스텀 JVM 생성시 공통으로 사용될 모듈패스
 def COMMON_MODULE_PATH = [
-	compileJava.getDestinationDir().toString(),
+	compileJava.getDestinationDir().toString(),		// Gradle을 통해 컴파일된 class 파일이 위치하는 루트 경로
 ]
+// 컴파일 및 실행시 사용될 모듈패스
 def RUNNING_MODULE_PATH = [
 	PATH_TO_FX,
 ]
+// 커스텀 JVM 생성시 사용될 모듈패스
 def LINKING_MODULE_PATH = [
 	"${JAVA_HOME}/jmods",
 	"${PATH_TO_FX_JMODS}",
@@ -37,13 +44,13 @@ compileJava {
 	options.encoding = "UTF-8"
 	options.compilerArgs = [
 		"--module-path", "${ (COMMON_MODULE_PATH + RUNNING_MODULE_PATH).join(PATH_SEPARATOR) }",
-		"--add-modules", "${USING_MODULES.join(',')}"
+		"--add-modules", "${USING_MODULES.join(',')}",
 	]
 }
 
 run {
 	jvmArgs "--module-path", "${ (COMMON_MODULE_PATH + RUNNING_MODULE_PATH).join(PATH_SEPARATOR) }"
-	jvmArgs "--add-modules", "${USING_MODULES.join(",")}"
+	jvmArgs "--add-modules", "${USING_MODULES.join(',')}"
 	jvmArgs "--module", mainClassName
 }
 

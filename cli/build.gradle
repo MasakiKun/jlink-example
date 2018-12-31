@@ -10,17 +10,44 @@ group "kr.ayukawa"
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
-mainClassName = "kr.ayukawa.cli.EntryPoint"
+mainClassName = "kr.ayukawa.jlinktest.cli/kr.ayukawa.cli.EntryPoint"
+
+// ========== 환경변수 설정
+def JAVA_HOME = System.getenv("JAVA_HOME")
+def PATH_SEPARATOR = new String(File.pathSeparatorChar)
+// 커스텀 런타임 JVM이 생성될 위치
+def DIST_PATH = "dist"
+// 컴파일 및 실행, 커스텀 JVM 생성시 공통으로 사용될 모듈패스
+def COMMON_MODULE_PATH = [
+	compileJava.getDestinationDir().toString(),		// Gradle을 통해 컴파일된 class 파일이 위치하는 루트 경로
+]
+// 컴파일 및 실행시 사용될 모듈패스
+def RUNNING_MODULE_PATH = []
+//  커스텀 JVM 생성시 사용될 모듈패스
+def LINKING_MODULE_PATH = []
+def USING_MODULES = [
+	"kr.ayukawa.jlinktest.cli"
+]
+
+compileJava {
+	options.encoding = "UTF-8"
+	options.compilerArgs = [
+		"--module-path", "${ (COMMON_MODULE_PATH + RUNNING_MODULE_PATH).join(PATH_SEPARATOR) }",
+		"--add-modules", "${USING_MODULES.join(",")}",
+	]
+}
+
+run {
+	jvmArgs "--module-path", "${ (COMMON_MODULE_PATH + RUNNING_MODULE_PATH).join(PATH_SEPARATOR) }"
+	jvmArgs "--add-modules", "${USING_MODULES.join(',')}"
+	jvmArgs "--module", mainClassName
+}
 
 jar {
 	manifest {
 		attributes "Main-Class": mainClassName
 	}
 }
-
-def DIST_PATH = "dist"
-def JAVA_HOME = System.getenv("JAVA_HOME")
-def PATH_SEPARATOR = File.pathSeparatorChar
 
 task jlink(type: Exec, group: "build") {
 	dependsOn "clean"
@@ -29,9 +56,9 @@ task jlink(type: Exec, group: "build") {
 	workingDir "build"
 
 	commandLine "${JAVA_HOME}/bin/jlink",
-		"--module-path", "libs${PATH_SEPARATOR}${JAVA_HOME}/jmods",
-		"--add-modules", "kr.ayukawa.jlinktest.cli",
-		"--launcher", "client=kr.ayukawa.jlinktest.cli/kr.ayukawa.cli.EntryPoint",
+		"--module-path", "${ (COMMON_MODULE_PATH + LINKING_MODULE_PATH).join(PATH_SEPARATOR) }",
+		"--add-modules", "${USING_MODULES.join(',')}",
+		"--launcher", "cli=${mainClassName}",
 		"--output", "${DIST_PATH}",
 		"--strip-debug",
 		"--compress", "2",
