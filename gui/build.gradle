@@ -61,10 +61,14 @@ repositories {
 	mavenCentral()
 }
 
+// JavaFX도 JFX11 부터는 Maven 저장소를 통해 의존성 관리가 가능하지만,
+// jlink를 실행할때 해당 버전과 버전이 일치하는 jmod 파일을 관리해주는 기능이 아직 없으므로
+// 사용할 JFX의 버전에 해당하는 jar 파일과 jmod 파일을 구해서, 수동으로 의존성 추가한다
 dependencies {
-	compile "org.openjfx:javafx-base:${versions.javafx}:${PLATFORM}"
-	compile "org.openjfx:javafx-graphics:${versions.javafx}:${PLATFORM}"
-	compile "org.openjfx:javafx-controls:${versions.javafx}:${PLATFORM}"
+//	compile "org.openjfx:javafx-base:${versions.javafx}:${PLATFORM}"
+//	compile "org.openjfx:javafx-graphics:${versions.javafx}:${PLATFORM}"
+//	compile "org.openjfx:javafx-controls:${versions.javafx}:${PLATFORM}"
+	compile fileTree(dir: PATH_TO_FX, include: ["**/*.jar"])
 }
 
 task jlink(type: Exec, group: "build") {
